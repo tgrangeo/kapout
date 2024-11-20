@@ -3,8 +3,33 @@
   import viteLogo from '/vite.svg'
   import Counter from './lib/Counter.svelte'
   import Input from './lib/Input.svelte';
+
+  async function getQuizzes(){
+    let response = await fetch("http://localhost:3000/api/quizzes")
+    if (!response.ok){
+      alert("failed!")
+      return
+    }
+    let json = await response.json()
+    console.log(json)
+  }
+
+  function connect(){
+    let websocket = new WebSocket("ws://localhost:3000/ws")
+    websocket.onopen = () =>{
+      console.log("websocket open")
+      websocket.send("hello world")
+    }
+    websocket.onmessage = (event) =>{
+      console.log(event.data)
+    }
+
+  }
 </script>
 
+
+<button on:click={getQuizzes}>Get quizzes</button>
+<button on:click={connect}>connect ws</button>
 <main>
   <div>
     <a href="https://vite.dev" target="_blank" rel="noreferrer">
