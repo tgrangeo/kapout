@@ -1,12 +1,29 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
-  import Input from './lib/Input.svelte';
   import Button from './lib/Button.svelte';
   import QuizCard from './lib/QuizCard.svelte';
 
-  let quizzes: {_id:string, name:string}[] = []
+  let code = "";
+
+interface Choice {
+  id: string;
+  name: string;
+  correct: boolean;
+}
+
+interface QuizQuestion {
+  id: string;
+  name: string;
+  choices: Choice[];
+}
+
+interface Quiz {
+  id: string;
+  Name: string;
+  questions: QuizQuestion[];
+}
+
+  let quizzes: Quiz[];
+  let msg = ""
 
   async function getQuizzes(){
     let response = await fetch("http://localhost:3000/api/quizzes")
@@ -16,56 +33,46 @@
     }
     let json = await response.json()
     quizzes = json
+    console.log(quizzes)
   }
 
   function connect(){
     let websocket = new WebSocket("ws://localhost:3000/ws")
     websocket.onopen = () =>{
-      console.log("websocket open")
-      websocket.send("hello world")
+      console.log("opened connection")
+      websocket.send(`join:${code}`)
     }
     websocket.onmessage = (event) =>{
       console.log(event.data)
     }
 
   }
+
+  function hostQuizz(quiz:any){
+    let websocket = new WebSocket("ws://localhost:3000/ws")
+    websocket.onopen = () =>{
+      console.log("opened question")
+      websocket.send(`host:${quiz.id}`)
+    }
+    websocket.onmessage = (event) =>{
+      msg = event.data
+    }
+  }
+
 </script>
 
 
-<button on:click={getQuizzes}>Get quizzes</button>
-<button on:click={connect}>connect ws</button>
-<Button>
-  herrrrre
-</Button>
+  <Button on:click={getQuizzes}>Get quizzes</Button>
+  
+  {#each quizzes as quiz}
+  <QuizCard quiz={quiz.Name} host={hostQuizz(quiz)}/>
+  {/each}
 
-{#each quizzes as quiz}
-  <QuizCard {quiz}/>
-{/each}
+  <input bind:value={code} type="text" placeholder="Game Code" class="boder"/>
+  <Button on:click={connect}>Join Game</Button>
+Message:{msg}
 
-<main>
-  <div>
-    <a href="https://vite.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
 
-  <div class="card">
-    <Counter />
-    <Input />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
 
 <style>
   .logo {

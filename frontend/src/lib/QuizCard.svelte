@@ -1,7 +1,9 @@
 <script lang="ts">
-	export let quiz: {_id:string, name:string};
+	import Button from "./Button.svelte";
+	let{ host, quiz } = $props();
 </script>
 
-<div class="bg-white border-2 border-green-500 p-4 rounded-xl">
-	{quiz.name}
+<div class="flex justify-between items-center bg-white border-2 border-green-500 p-4 rounded-xl">
+	{quiz}
+	<Button on:click={host}>Host</Button>
 </div>
