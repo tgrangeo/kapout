@@ -26,8 +26,6 @@ func (c WebsocketController) Ws(con *websocket.Conn) {
 			c.netService.OnDisconnect(con)
 			break
 		}
-
 		c.netService.OnIncomingMessage(con, mt, msg)
-
 	}
 }

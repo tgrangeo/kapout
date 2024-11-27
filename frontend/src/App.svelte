@@ -1,29 +1,13 @@
 <script lang="ts">
   import Button from './lib/Button.svelte';
   import QuizCard from './lib/QuizCard.svelte';
+  import type { Quiz } from './model/quiz';
+  import { NetService } from './service/net';
 
   let code = "";
-
-interface Choice {
-  id: string;
-  name: string;
-  correct: boolean;
-}
-
-interface QuizQuestion {
-  id: string;
-  name: string;
-  choices: Choice[];
-}
-
-interface Quiz {
-  id: string;
-  Name: string;
-  questions: QuizQuestion[];
-}
-
   let quizzes: Quiz[];
   let msg = ""
+  let netService =  new NetService() 
 
   async function getQuizzes(){
     let response = await fetch("http://localhost:3000/api/quizzes")
@@ -36,27 +20,19 @@ interface Quiz {
     console.log(quizzes)
   }
 
-  function connect(){
-    let websocket = new WebSocket("ws://localhost:3000/ws")
-    websocket.onopen = () =>{
-      console.log("opened connection")
-      websocket.send(`join:${code}`)
-    }
-    websocket.onmessage = (event) =>{
-      console.log(event.data)
-    }
-
+  function hostQuizz(quiz:any){
+    netService.sendPacket({
+      id:1,
+      quiId: quiz.id
+    })
   }
 
-  function hostQuizz(quiz:any){
-    let websocket = new WebSocket("ws://localhost:3000/ws")
-    websocket.onopen = () =>{
-      console.log("opened question")
-      websocket.send(`host:${quiz.id}`)
-    }
-    websocket.onmessage = (event) =>{
-      msg = event.data
-    }
+  function connect(){
+    netService.sendPacket({
+      id:1,
+      code:"1234",
+      name:"bob"
+    })
   }
 
 </script>
